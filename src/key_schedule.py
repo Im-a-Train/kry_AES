@@ -1,37 +1,38 @@
 
-def KexExpand(key, word, Nk, Nr, Nb):
+def keyExpand(key, wordArray, Nk, Nr, Nb):
     i = 0
     while i < Nk:
-        word[i] = word(key[4*i], key[4*i+1], key[4*i+2], key[4*i+3])
+        wordArray[i] = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]]
         i += 1
     i = Nk
 
     while i < Nb * (Nr+1):
-        tmp = word[i-1]
-        if i%Nk == 0:
-            tmp = SubWord(RotWord(tmp)) ^ Rcon(i/Nk)
+        tmpWord = wordArray[i-1]
+        if i % Nk == 0:
+            tmpWord = subWord(rotWord(tmpWord)) ^ rcon(i//Nk)
         elif Nk > 6 and Nk == 4:
-            tmp = SubWord(tmp)
-        word[i] = word[i-Nk] ^ tmp
+            tmpWord = subWord(tmpWord)
+        wordArray[i] = wordArray[i-Nk] ^ tmpWord
         i += 1
+    return wordArray
 
 
-def SubWord(word):
+def subWord(word):
     i = 0
     while i < 4:
-        word[i] = SBox(word[i])
+        word[i] = sBox(word[i])
         i += 1
     return word
 
-def RotWord(word):
-    word = (word[1], word[2], word[3], word[0])
-    return word
+def rotWord(word):
+    return [word[1], word[2], word[3], word[0]]
 
-def Rcon(i):
-    return (0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a )[i]
+def rcon(i, word):
+    rconBytes = [0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a]
+    return rconBytes[i]
 
-def SBox(byte):
-    sBox = (
+def sBox(byte):
+    sBox = [
         0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
         0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
         0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15,
@@ -48,5 +49,23 @@ def SBox(byte):
         0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-    )
+    ]
     return sBox[byte]
+
+
+def main():
+    k = '2b7e151628aed2a6abf7158809cf4f3c'
+    key = bytearray()
+
+    w0 = bytearray('2b7e1516', 'UTF-8')
+    w1 = bytearray('2b7e1516','UTF-8')
+    w2 = bytearray('2b7e1516','UTF-8')
+    w3 = bytearray('2b7e1516','UTF-8')
+
+    key.extend(map(ord, k))
+    word = [w0, w1, w2, w3]
+    print(keyExpand(key, word, 4, 4, 10))
+
+
+if __name__ == '__main__':
+    main()
