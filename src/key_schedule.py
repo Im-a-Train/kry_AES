@@ -3,36 +3,40 @@ from src.helper import gmul
 
 def keyExpand(key, Nk, Nr, Nb):
     wordArray = []
-    key_bit_mask = 2^(Nk*2)-1
+    key_bit_mask = 0xFF_FF_FF_FF
     i = 0
     while i < Nk:
         wordArray.append(0)
-        wordArray[i % Nk] |= key & key_bit_mask
-        #shit masks for cutting
-        key_bit_mask <<
+        wordArray[i] |= key & key_bit_mask
+        print("Word: " + hex(wordArray[i]))
+        print("Key: " + hex(key))
+        key = key >> 32
         i += 1
+
     i = Nk
 
     while i < Nb * (Nr+1):
-        tmpWord = wordArray[(i-1) % 4]
+        tmpWord = wordArray[(i-1) % Nk]
+        print(hex(tmpWord))
         if i % Nk == 0:
             tmpWord = subWord(rotWord(tmpWord)) ^ rcon(i//Nk)
         elif Nk > 6 and Nk == 4:
             tmpWord = subWord(tmpWord)
-        wordArray[i %4] = wordArray[(i-Nk) % 4] ^ tmpWord
+        wordArray[i % Nk] = wordArray[(i-Nk) % Nk] ^ tmpWord
         i += 1
+
     return wordArray
 
 
 def subWord(word):
     resWord = 0
-    bit_mask = 0xff
+    bit_mask = 0x00_00_00_ff
     i = 0
     while i < 4:
         resWord |= sBox(word & bit_mask)
-        bit_mask << 8
+        word = word >> 8
         i += 1
-    return word
+    return resWord
 
 def rotWord(word):
     hi_byte = word & 0xFF000000
@@ -81,7 +85,7 @@ def main():
     w3 = 0x09cf4f3c
 
     wordArray = [w0, w1, w2, w3]
-    print(keyExpand(key, 4, 4, 10))
+    expandedWords = keyExpand(key, 4, 4, 10)
 
 
 if __name__ == '__main__':

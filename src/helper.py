@@ -7,6 +7,7 @@ def gmul(a, b):
     p = 0
     counter = 0
     while counter < 8:
+        counter += 1
         #if the low bit of b is set
         if (b & 1) == 1:
             #xor the product with a
