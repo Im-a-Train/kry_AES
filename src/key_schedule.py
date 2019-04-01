@@ -9,8 +9,6 @@ def keyExpand(key, Nk, Nr, Nb):
     while i < Nk:
         wordArray.append(0)
         wordArray[i] |= key & key_byte_mask
-        print("Word: " + hex(wordArray[i]))
-        print("Key: " + hex(key))
         key = key >> 32
         i += 1
     wordArray = [wordArray[3], wordArray[2], wordArray[1], wordArray[0]]
@@ -19,11 +17,7 @@ def keyExpand(key, Nk, Nr, Nb):
 
     while i < Nb * (Nr+1):
         tmpWord = wordArray[(i-1) % Nk]
-        print("Index: " + str(i) + " tmp Hex: " + hex(tmpWord))
         if i % Nk == 0:
-            print("Index: " + str(i) + " rot Hex: " + hex(rotWord(tmpWord)))
-            print("Index: " + str(i) + " sub Hex: " + hex(subWord(rotWord(tmpWord))))
-            print("Index: " + str(i) + " rcon Hex: " + hex(rcon(i//Nk)))
             tmpWord = subWord(rotWord(tmpWord)) ^ rcon(i//Nk)
         elif Nk > 6 and Nk == 4:
             tmpWord = subWord(tmpWord)
@@ -48,22 +42,20 @@ def subWord(word):
 
 def rotWord(word):
     hi_byte = word & 0xFF_00_00_00
-    #print( "Hi before shift" + hex(hi_byte))
     hi_byte = hi_byte >> 24
-    #print("Hi after shift" + hex(hi_byte))
     word = word & 0x00_FF_FF_FF
     word = word << 8
     word = word | hi_byte
     return word
 
-def rcon(word):
-    c = 0b0000_0001
-    if word == 0:
+def rcon(byte):
+    c = 1
+    if byte == 0:
         return 0
-    while word != 1:
+    while byte != 1:
         c = gmul(c, 2)
-        word = word - 1
-    return c
+        byte = byte - 1
+    return c << 24
 
 def sBox(byte):
     byte = byte % 255
@@ -85,21 +77,16 @@ def sBox(byte):
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
     ]
-
     return sBox[byte]
 
 
 def main():
     key = 0x2b7e151628aed2a6abf7158809cf4f3c
-
-    w0 = 0x2b7e1516
-    w1 = 0x28aed2a6
-    w2 = 0xabf71588
-    w3 = 0x09cf4f3c
-
-    wordArray = [w0, w1, w2, w3]
     expandedWords = keyExpand(key, 4, 4, 10)
-
+    print(hex(expandedWords[0]))
+    print(hex(expandedWords[1]))
+    print(hex(expandedWords[2]))
+    print(hex(expandedWords[3]))
 
 if __name__ == '__main__':
     main()
