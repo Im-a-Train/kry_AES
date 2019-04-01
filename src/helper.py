@@ -13,7 +13,7 @@ def gmul(a, b):
             #xor the product with a
             p = p ^ a
         hi_bit_set = a & 0x80
-        a << 1
+        a = a << 1
         if hi_bit_set == 0x80:
             a = a ^ 0x1b
         b = b >> 1

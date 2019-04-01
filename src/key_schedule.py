@@ -3,22 +3,27 @@ from src.helper import gmul
 
 def keyExpand(key, Nk, Nr, Nb):
     wordArray = []
-    key_bit_mask = 0xFF_FF_FF_FF
+    #Bit-Mask for one Byte
+    key_byte_mask = 0xFF_FF_FF_FF
     i = 0
     while i < Nk:
         wordArray.append(0)
-        wordArray[i] |= key & key_bit_mask
+        wordArray[i] |= key & key_byte_mask
         print("Word: " + hex(wordArray[i]))
         print("Key: " + hex(key))
         key = key >> 32
         i += 1
+    wordArray = [wordArray[3], wordArray[2], wordArray[1], wordArray[0]]
 
     i = Nk
 
     while i < Nb * (Nr+1):
         tmpWord = wordArray[(i-1) % Nk]
-        print(hex(tmpWord))
+        print("Index: " + str(i) + " tmp Hex: " + hex(tmpWord))
         if i % Nk == 0:
+            print("Index: " + str(i) + " rot Hex: " + hex(rotWord(tmpWord)))
+            print("Index: " + str(i) + " sub Hex: " + hex(subWord(rotWord(tmpWord))))
+            print("Index: " + str(i) + " rcon Hex: " + hex(rcon(i//Nk)))
             tmpWord = subWord(rotWord(tmpWord)) ^ rcon(i//Nk)
         elif Nk > 6 and Nk == 4:
             tmpWord = subWord(tmpWord)
@@ -30,18 +35,24 @@ def keyExpand(key, Nk, Nr, Nb):
 
 def subWord(word):
     resWord = 0
-    bit_mask = 0x00_00_00_ff
+    #Bit-Mask for first byte
+    bit_mask = 0xFF_00_00_00
     i = 0
     while i < 4:
-        resWord |= sBox(word & bit_mask)
-        word = word >> 8
+        #apply s-box and move byte to right position in result word
+        resWord |= sBox((word & bit_mask)) << (8*(3-i))
         i += 1
+        #move bit-mask one byte
+        bit_mask = bit_mask >> 8
     return resWord
 
 def rotWord(word):
-    hi_byte = word & 0xFF000000
-    hi_byte = hi_byte >> 6
-    word = word << 2
+    hi_byte = word & 0xFF_00_00_00
+    #print( "Hi before shift" + hex(hi_byte))
+    hi_byte = hi_byte >> 24
+    #print("Hi after shift" + hex(hi_byte))
+    word = word & 0x00_FF_FF_FF
+    word = word << 8
     word = word | hi_byte
     return word
 
@@ -55,6 +66,7 @@ def rcon(word):
     return c
 
 def sBox(byte):
+    byte = byte % 255
     sBox = [
         0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
         0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -73,6 +85,7 @@ def sBox(byte):
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
     ]
+
     return sBox[byte]
 
 
