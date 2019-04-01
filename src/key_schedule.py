@@ -1,35 +1,54 @@
+from src.helper import gmul
 
-def keyExpand(key, wordArray, Nk, Nr, Nb):
+
+def keyExpand(key, Nk, Nr, Nb):
+    wordArray = []
+    key_bit_mask = 2^(Nk*2)-1
     i = 0
     while i < Nk:
-        wordArray[i] = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]]
+        wordArray.append(0)
+        wordArray[i % Nk] |= key & key_bit_mask
+        #shit masks for cutting
+        key_bit_mask <<
         i += 1
     i = Nk
 
     while i < Nb * (Nr+1):
-        tmpWord = wordArray[i-1]
+        tmpWord = wordArray[(i-1) % 4]
         if i % Nk == 0:
             tmpWord = subWord(rotWord(tmpWord)) ^ rcon(i//Nk)
         elif Nk > 6 and Nk == 4:
             tmpWord = subWord(tmpWord)
-        wordArray[i] = wordArray[i-Nk] ^ tmpWord
+        wordArray[i %4] = wordArray[(i-Nk) % 4] ^ tmpWord
         i += 1
     return wordArray
 
 
 def subWord(word):
+    resWord = 0
+    bit_mask = 0xff
     i = 0
     while i < 4:
-        word[i] = sBox(word[i])
+        resWord |= sBox(word & bit_mask)
+        bit_mask << 8
         i += 1
     return word
 
 def rotWord(word):
-    return [word[1], word[2], word[3], word[0]]
+    hi_byte = word & 0xFF000000
+    hi_byte = hi_byte >> 6
+    word = word << 2
+    word = word | hi_byte
+    return word
 
-def rcon(i, word):
-    rconBytes = [0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a]
-    return rconBytes[i]
+def rcon(word):
+    c = 0b0000_0001
+    if word == 0:
+        return 0
+    while word != 1:
+        c = gmul(c, 2)
+        word = word - 1
+    return c
 
 def sBox(byte):
     sBox = [
@@ -54,17 +73,15 @@ def sBox(byte):
 
 
 def main():
-    k = '2b7e151628aed2a6abf7158809cf4f3c'
-    key = bytearray()
+    key = 0x2b7e151628aed2a6abf7158809cf4f3c
 
-    w0 = bytearray('2b7e1516', 'UTF-8')
-    w1 = bytearray('2b7e1516','UTF-8')
-    w2 = bytearray('2b7e1516','UTF-8')
-    w3 = bytearray('2b7e1516','UTF-8')
+    w0 = 0x2b7e1516
+    w1 = 0x28aed2a6
+    w2 = 0xabf71588
+    w3 = 0x09cf4f3c
 
-    key.extend(map(ord, k))
-    word = [w0, w1, w2, w3]
-    print(keyExpand(key, word, 4, 4, 10))
+    wordArray = [w0, w1, w2, w3]
+    print(keyExpand(key, 4, 4, 10))
 
 
 if __name__ == '__main__':

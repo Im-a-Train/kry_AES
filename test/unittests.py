@@ -5,9 +5,17 @@ keyExpand = key_schedule.keyExpand
 class TestStringMethods(unittest.TestCase):
 
     def test_keyExpand(self):
-        key = "8F0A5EB7BE9F67B883CEF7003626340E" #MD5 of Hello Test
-        word = (0x00, 0x01, 0x02, 0x03) #Dummy Word
-        self.assertEqual(keyExpand(key, word, 4, 4, 10), 'FOO')
+        k = '2b7e151628aed2a6abf7158809cf4f3c'
+        key = bytearray()
+
+        w0 = bytearray('2b7e1516', 'UTF-8')
+        w1 = bytearray('2b7e1516', 'UTF-8')
+        w2 = bytearray('2b7e1516', 'UTF-8')
+        w3 = bytearray('2b7e1516', 'UTF-8')
+
+        key.extend(map(ord, k))
+        wordArray = [w0, w1, w2, w3]
+        self.assertEqual(keyExpand(key, wordArray, 4, 4, 10), 'FOO')
 
 if __name__ == '__main__':
     unittest.main()
