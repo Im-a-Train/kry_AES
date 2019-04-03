@@ -2,28 +2,34 @@ from src.helper import gmul
 
 
 def keyExpand(key, Nk, Nr, Nb):
-    wordArray = []
+    wordArray = [0] * Nb * (Nr+1)
     #Bit-Mask for one Byte
     key_byte_mask = 0xFF_FF_FF_FF
     i = 0
+    #cut the key
     while i < Nk:
-        wordArray.append(0)
         wordArray[i] |= key & key_byte_mask
         key = key >> 32
         i += 1
-    wordArray = [wordArray[3], wordArray[2], wordArray[1], wordArray[0]]
+    i = Nk-1
 
+    #Turn word array
+    i = 0
+    tmpArray = list(wordArray)
+    while i < 4:
+        wordArray[i] = tmpArray[3-i]
+        i = i + 1
+
+    #Expand the key
     i = Nk
-
     while i < Nb * (Nr+1):
-        tmpWord = wordArray[(i-1) % Nk]
+        tmpWord = wordArray[i-1]
         if i % Nk == 0:
             tmpWord = subWord(rotWord(tmpWord)) ^ rcon(i//Nk)
         elif Nk > 6 and Nk == 4:
             tmpWord = subWord(tmpWord)
-        wordArray[i % Nk] = wordArray[(i-Nk) % Nk] ^ tmpWord
+        wordArray[i] = wordArray[(i-Nk)] ^ tmpWord
         i += 1
-
     return wordArray
 
 
@@ -33,8 +39,10 @@ def subWord(word):
     bit_mask = 0xFF_00_00_00
     i = 0
     while i < 4:
-        #apply s-box and move byte to right position in result word
-        resWord |= sBox((word & bit_mask)) << (8*(3-i))
+        #Get only the byte
+        tmpByte = (word & bit_mask) >> 8*(3-i)
+        #apply s-box and move back the byte to right position in result word
+        resWord |= sBox((tmpByte)) << (8*(3-i))
         i += 1
         #move bit-mask one byte
         bit_mask = bit_mask >> 8
@@ -58,7 +66,6 @@ def rcon(byte):
     return c << 24
 
 def sBox(byte):
-    byte = byte % 255
     sBox = [
         0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
         0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -79,14 +86,13 @@ def sBox(byte):
     ]
     return sBox[byte]
 
-
 def main():
     key = 0x2b7e151628aed2a6abf7158809cf4f3c
     expandedWords = keyExpand(key, 4, 4, 10)
-    print(hex(expandedWords[0]))
-    print(hex(expandedWords[1]))
-    print(hex(expandedWords[2]))
-    print(hex(expandedWords[3]))
+    i = 0
+    while i< len(expandedWords):
+        print("Nr:" + str(i+1) + " " + hex(expandedWords[i]))
+        i = i + 1
 
 if __name__ == '__main__':
     main()

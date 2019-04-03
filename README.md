@@ -1,2 +1,2 @@
 # kry_AES
-Python AES Implementaton
+Python AES Key Schedule Implementaton
