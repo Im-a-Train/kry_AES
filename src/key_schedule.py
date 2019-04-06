@@ -1,9 +1,9 @@
 from src.helper import gmul
 
 
-def keyExpand(key, Nk, Nr, Nb):
-    wordArray = [0] * Nb * (Nr+1)
-    #Bit-Mask for one Byte
+def keyExpand(key, Nk, Nb, Nr):
+    wordArray = [0] * Nb * (Nr + 1)
+    #Bit-Mask for one word
     key_byte_mask = 0xFF_FF_FF_FF
     i = 0
     #cut the key
@@ -31,7 +31,6 @@ def keyExpand(key, Nk, Nr, Nb):
         wordArray[i] = wordArray[(i-Nk)] ^ tmpWord
         i += 1
     return wordArray
-
 
 def subWord(word):
     resWord = 0
@@ -87,11 +86,12 @@ def sBox(byte):
     return sBox[byte]
 
 def main():
-    key = 0x2b7e151628aed2a6abf7158809cf4f3c
-    expandedWords = keyExpand(key, 4, 4, 10)
+    key1 = 0x2b7e151628aed2a6abf7158809cf4f3c
+    key2 =  0x00000000000000000000000000000000
+    expandedWords = keyExpand(key1, 4, 4, 10)
     i = 0
-    while i< len(expandedWords):
-        print("Nr:" + str(i+1) + " " + hex(expandedWords[i]))
+    while i < len(expandedWords):
+        print("Nr:" + str(i) + " " + hex(expandedWords[i]))
         i = i + 1
 
 if __name__ == '__main__':
