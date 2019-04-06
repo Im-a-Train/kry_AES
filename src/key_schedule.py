@@ -5,6 +5,9 @@ def keyExpand(key, Nk, Nb, Nr):
 
     wordArray = [0] * (Nb * (Nr+1))
     #Bit-Mask for one Byte
+def keyExpand(key, Nk, Nb, Nr):
+    wordArray = [0] * Nb * (Nr + 1)
+    #Bit-Mask for one word
     key_byte_mask = 0xFF_FF_FF_FF
     i = 0
     #cut the key
@@ -32,7 +35,6 @@ def keyExpand(key, Nk, Nb, Nr):
         wordArray[i] = wordArray[(i-Nk)] ^ tmpWord
         i += 1
     return wordArray
-
 
 def subWord(word):
     resWord = 0
