@@ -1,2 +1,4 @@
-# kry_AES
-Python AES Key Schedule Implementaton
+# kry_AES - Melvin Johner
+Python AES Key Schedule Implementation
+
+The kex
