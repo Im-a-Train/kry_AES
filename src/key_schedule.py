@@ -2,10 +2,6 @@ from src.helper import gmul
 
 
 def keyExpand(key, Nk, Nb, Nr):
-
-    wordArray = [0] * (Nb * (Nr+1))
-    #Bit-Mask for one Byte
-def keyExpand(key, Nk, Nb, Nr):
     wordArray = [0] * Nb * (Nr + 1)
     #Bit-Mask for one word
     key_byte_mask = 0xFF_FF_FF_FF
